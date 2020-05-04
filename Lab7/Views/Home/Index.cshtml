@@ -1,0 +1,82 @@
+﻿@{
+    ViewData["Title"] = "Main";
+}
+
+<div class="text-center">
+    <h4 class="display-4">Welcome to Balance Solver</h4>
+</div>
+
+<div class="text-right">
+    <h3>by Kirill Kabanov (1-46M)</h3>
+</div>
+
+<div class="text-left">
+    <br />
+    <p>To get started with the service, you can use the <a asp-area="" asp-controller="Home" asp-action="Web">web interface</a> or the API.</p>
+    <br />
+    <h3>Api usage</h3>
+    <hr />
+    <p>POST your json input data as <b>request body</b> to api/balance</p>
+    <p>or</p>
+    <p>POST your json <b>string</b> input data as <b>form-data</b> to api/balance/text.</p>
+    <p>Server will return easy to read json output data.</p>
+    <p>Input data example:</p>
+    <pre><code>
+    {
+        "X0": [ 10.005, 3.033, 6.831, 1.985, 5.093, 4.057, 0.991 ],
+        "A": [
+        [ 1, -1, -1, 0, 0, 0, 0 ],
+        [ 0, 0, 1, -1, -1, 0, 0 ],
+        [ 0, 0, 0, 0, 1, -1, -1 ]
+        ],
+        "B": [ 0, 0, 0 ],
+        "Measurability": [ 1, 1, 1, 1, 1, 1, 1 ],
+        "Tolerance": [ 0.2, 0.121, 0.683, 0.04, 0.102, 0.081, 0.02 ],
+        "Lower": [ 0, 0, 0, 0, 0, 0, 0 ],
+        "Upper": [ 10000, 10000, 10000, 10000, 10000, 10000, 10000 ]
+    }
+    </code></pre>
+    <p>Here:</p>
+    <ul>
+        <li>X0 - Measured values for each flow.</li>
+        <li>A - Matrix of connections.</li>
+        <li>B - The right side of the balance matrix.</li>
+        <li>Measurability - Measurability of flows.</li>
+        <li>Tolerance - Tolerances of flow values.</li>
+        <li>Lower - Lower limits of measurements.</li>
+        <li>Upper - Upper limits of measurements.</li>
+    </ul>
+    <p>Output data examples:</p>
+    <pre><code>
+    {
+        "type": "result",
+        "data": {
+            "x": [
+                10.055612418500504,
+                3.0144745895183522,
+                7.041137828982151,
+                1.9822547563048074,
+                5.058883072677343,
+                4.067257698582969,
+                0.9916253740943739
+            ],
+            "disbalanceOriginal": 0.2879496483762398,
+            "disbalance": 9.155133597044475E-16
+        }
+    }
+    </code></pre>
+    <pre><code>
+    {
+        "type": "error",
+        "data": "Value cannot be null. (Parameter 'upper')"
+    }
+    </code></pre>
+    <p>Here:</p>
+    <ul>
+        <li>Type - type of response (result or error).</li>
+        <li>Data - result data or error message.</li>
+        <li>X - Balanced flow values.</li>
+        <li>DisbalanceOriginal - Original maximum disbalance.</li>
+        <li>Disbalance - Maximum disbalance after balancing.</li>
+    </ul>
+</div>

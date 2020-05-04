@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Web interface";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Web interface for API</h1>
+    <br />
+</div>
+
+<div class="text-left">
+    <p>Type your json input data and press 'process' button to get results of balancing.</p>
+    <br />
+    <h3>Input data</h3>
+    <hr />
+    <form method="post" action="/api/balance/text" target="output">
+        <textarea name="input" rows="14">
+        {
+            "X0": [ 10.005, 3.033, 6.831, 1.985, 5.093, 4.057, 0.991 ],
+            "A": [
+            [ 1, -1, -1, 0, 0, 0, 0 ],
+            [ 0, 0, 1, -1, -1, 0, 0 ],
+            [ 0, 0, 0, 0, 1, -1, -1 ]
+            ],
+            "B": [ 0, 0, 0 ],
+            "Measurability": [ 1, 1, 1, 1, 1, 1, 1 ],
+            "Tolerance": [ 0.2, 0.121, 0.683, 0.04, 0.102, 0.081, 0.02 ],
+            "Lower": [ 0, 0, 0, 0, 0, 0, 0 ],
+            "Upper": [ 10000, 10000, 10000, 10000, 10000, 10000, 10000 ]
+        }
+        </textarea>
+        <br />
+        <input type="submit" class="btn btn-dark" value="Process" onclick="resetIframe();" />
+    </form>
+    <br />
+    <h3>Output data</h3>
+    <hr />
+    <pre><code><iframe name="output" height="128" onload="resizeToFitContent(this);"></iframe></code></pre>
+</div>
