@@ -1,11 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="MWArray.dll" />
+    <None Remove="QPSolver.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Accord.Math" Version="3.8.0" />
+    <PackageReference Include="MathNet.Numerics" Version="4.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MWArray">
+      <HintPath>MWArray.dll</HintPath>
+    </Reference>
+    <Reference Include="QPSolver">
+      <HintPath>QPSolver.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Accord.Math;
-using Accord.Math.Optimization;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra.Double;
+using MathWorks.MATLAB.NET.Arrays;
+using QPSolver;
 
 namespace Balance
 {
-    public class AccordBalanceSolver : IBalanceSolver
+    public class MathlabBalanceSolver : IBalanceSolver
     {
         public double DisbalanceOriginal { get; private set; }
         public double Disbalance { get; private set; }
@@ -46,67 +47,41 @@ namespace Balance
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            var i = SparseMatrix.OfDiagonalArray(measurability);
-            var w = SparseMatrix.OfDiagonalVector(1 / SparseVector.OfEnumerable(tolerance).PointwisePower(2));
-
-            var h = i * w;
-            var d = -(h * SparseVector.OfEnumerable(x0));
-
-            var func = new QuadraticObjectiveFunction(h.ToArray(), d.ToArray());
-            var constraints = new List<LinearConstraint>();
-
-            Time = stopWatch.Elapsed;
-
-            //Нижние и верхние границы
-            for (var j = 0; j < x0.Length; j++)
+            try
             {
-                constraints.Add(new LinearConstraint(1)
-                {
-                    VariablesAtIndices = new[] { j },
-                    ShouldBe = ConstraintType.GreaterThanOrEqualTo,
-                    Value = lower[j]
-                });
+                //Создаем объет для связи с матлабом
+                var matlab = new MatlabWorker();
 
-                constraints.Add(new LinearConstraint(1)
-                {
-                    VariablesAtIndices = new[] { j },
-                    ShouldBe = ConstraintType.LesserThanOrEqualTo,
-                    Value = upper[j]
-                });
+                // Преобразуем данные в понятный матлабу формат
+                var aM = new MWNumericArray(a);
+                var bM = new MWNumericArray(b.Length, 1, b);
+                var x0M = new MWNumericArray(x0.Length, 1, x0);
+                var toleranceM = new MWNumericArray(tolerance.Length, 1, tolerance);
+                var measurabilityM = new MWNumericArray(measurability.Length, 1, measurability);
+                var lowerM = new MWNumericArray(lower.Length, 1, lower);
+                var upperM = new MWNumericArray(upper.Length, 1, upper);
+                var maxIter = new MWNumericArray(200);
+                var drTol = new MWNumericArray(0.0);
+
+                // Запускаем солвер и ищем решение
+                var result = matlab.QPSolver(7, aM, bM, x0M, toleranceM, measurabilityM,
+                    lowerM, upperM, maxIter, drTol);
+
+                stopWatch.Stop();
+                Time = TimeSpan.Zero;
+                TimeAll = stopWatch.Elapsed;
+
+                DisbalanceOriginal = ((MWNumericArray)result[2]).ToScalarDouble();
+                Disbalance = ((MWNumericArray)result[3]).ToScalarDouble();
+
+                return (double[])((MWNumericArray)result[0]).ToVector(MWArrayComponent.Real);
             }
-
-            //Ограничения для решения задачи баланса
-            for (var j = 0; j < b.Length; j++)
+            catch (Exception e)
             {
-                var notNullElements = Array.FindAll(a.GetRow(j), x => Math.Abs(x) > 0.0000001);
-                var notNullElementsIndexes = new List<int>();
-                for (var k = 0; k < x0.Length; k++)
-                {
-                    if (Math.Abs(a[j,k]) > 0.0000001)
-                    {
-                        notNullElementsIndexes.Add(k);
-                    }
-                }
+                Console.WriteLine(e);
 
-                constraints.Add(new LinearConstraint(notNullElements.Length)
-                {
-                    VariablesAtIndices = notNullElementsIndexes.ToArray(),
-                    CombinedAs = notNullElements,
-                    ShouldBe = ConstraintType.EqualTo,
-                    Value = b[j]
-                });
+                throw new ApplicationException("Failed to solve balance task.");
             }
-
-            var solver = new GoldfarbIdnani(func, constraints);
-            if (!solver.Minimize()) throw new ApplicationException("Failed to solve balance task.");
-
-            stopWatch.Stop();
-            TimeAll = stopWatch.Elapsed;
-
-            DisbalanceOriginal = a.Dot(x0).Subtract(b).Euclidean();
-            Disbalance = a.Dot(solver.Solution).Subtract(b).Euclidean();
-
-            return solver.Solution;
         }
 
         public double GlobalTest(double[] x0, double[,] a, double[] measurability, double[] tolerance)

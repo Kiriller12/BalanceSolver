@@ -7,7 +7,13 @@
         public double[] B { get; set; }
         public double[] Measurability { get; set; }
         public double[] Tolerance { get; set; }
-        public double[] Lower { get; set; }
-        public double[] Upper { get; set; }
+        public double[] LowerMetrologic { get; set; }
+        public double[] UpperMetrologic { get; set; }
+        public double[] LowerTechnologic { get; set; }
+        public double[] UpperTechnologic { get; set; }
+        public string[] Names { get; set; }
+        public string[] Guids { get; set; }
+        public string[] NodesGuids { get; set; }
+        public bool UseTechnologic { get; set; }
     }
 }
